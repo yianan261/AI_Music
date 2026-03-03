@@ -7,14 +7,14 @@ import shutil
 import pandas as pd
 from pathlib import Path
 
-# Paths - adjust MAESTRO_DIR if your extraction location differs
-# MAESTRO extracts to a folder; audio files live in year subdirs (e.g. 2018/xxx.wav)
-MAESTRO_DIR = Path("data/maestro-v3.0.0")
-RAW_AUDIO_DIR = Path("data/raw_audio")
+# Project root (parent of scripts/)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+MAESTRO_DIR = PROJECT_ROOT / "data" / "maestro-v3.0.0"
+RAW_AUDIO_DIR = PROJECT_ROOT / "data" / "raw_audio"
 N_PIECES = 100
 
 def main():
-    csv_path = Path("data/maestro-v3.0.0.csv")
+    csv_path = PROJECT_ROOT / "data" / "maestro-v3.0.0.csv"
     if not csv_path.exists():
         raise FileNotFoundError(
             f"MAESTRO CSV not found at {csv_path}. "

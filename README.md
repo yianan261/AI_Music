@@ -14,9 +14,9 @@ pip install -r requirements.txt
 
 ```bash
 docker compose build
-docker compose run --rm app python prepare_maestro.py   # after extracting MAESTRO to data/
-docker compose run --rm app python preprocess.py
-docker compose run --rm app python mert_retrieval.py
+docker compose run --rm app python scripts/prepare_maestro.py   # after extracting MAESTRO to data/
+docker compose run --rm app python scripts/preprocess.py
+docker compose run --rm app python scripts/mert_retrieval.py
 ```
 
 Jupyter for notebooks:
@@ -32,7 +32,7 @@ docker compose run --rm jupyter
 After downloading and extracting [MAESTRO](https://magenta.tensorflow.org/datasets/maestro):
 
 ```bash
-python prepare_maestro.py
+python scripts/prepare_maestro.py
 ```
 
 This copies 100 audio files to `data/raw_audio/` as `piece_001.wav`, `piece_002.wav`, etc.
@@ -42,7 +42,7 @@ This copies 100 audio files to `data/raw_audio/` as `piece_001.wav`, `piece_002.
 Standardize to 16kHz, mono, normalized:
 
 ```bash
-python preprocess.py
+python scripts/preprocess.py
 ```
 
 Output: `data/processed/`
@@ -52,7 +52,7 @@ Output: `data/processed/`
 Classical MIR baseline (sanity check):
 
 ```bash
-jupyter notebook baseline_cqt.ipynb
+jupyter notebook notebooks/baseline_cqt.ipynb
 ```
 
 ### 4. MERT + FAISS Retrieval
@@ -61,13 +61,13 @@ Modern baseline with pretrained MERT embeddings:
 
 ```bash
 # Build index and run demo query
-python mert_retrieval.py
+python scripts/mert_retrieval.py
 
 # Build index only
-python mert_retrieval.py --build-only
+python scripts/mert_retrieval.py --build-only
 
 # Query a specific file
-python mert_retrieval.py --query path/to/query.wav --k 5
+python scripts/mert_retrieval.py --query data/processed/piece_001.wav --k 5
 ```
 
 ## Directory Structure

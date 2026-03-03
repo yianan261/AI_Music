@@ -26,6 +26,9 @@ Dockerfile
 docker-compose.yml
 .dockerignore
 
+# Jupyter
+.ipynb_checkpoints/
+
 # Misc
 *.log
 .DS_Store

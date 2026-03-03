@@ -14,9 +14,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # App code
-COPY *.py .
-COPY *.ipynb .
-COPY README.md .
+COPY scripts/ ./scripts/
+COPY notebooks/ ./notebooks/
+COPY requirements.txt README.md .
 
 # Default: bash (override in compose/run)
 CMD ["bash"]

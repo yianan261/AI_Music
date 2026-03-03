@@ -1,7 +1,7 @@
 torch
 torchaudio
 librosa
-numpy
+numpy<2.0.0
 scipy
 scikit-learn
 faiss-gpu

@@ -9,8 +9,9 @@ import os
 import soundfile as sf
 from pathlib import Path
 
-INPUT_DIR = Path("data/raw_audio")
-OUTPUT_DIR = Path("data/processed")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+INPUT_DIR = PROJECT_ROOT / "data" / "raw_audio"
+OUTPUT_DIR = PROJECT_ROOT / "data" / "processed"
 TARGET_SR = 16000
 
 def main():
