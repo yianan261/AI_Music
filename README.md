@@ -1,0 +1,82 @@
+# AI Music - ID and Accuracy Project
+
+Music retrieval: given a short snippet, retrieve the correct piece from a database.
+
+## Setup
+
+### Option A: Local
+
+```bash
+pip install -r requirements.txt
+```
+
+### Option B: Docker (recommended for teams)
+
+```bash
+docker compose build
+docker compose run --rm app python prepare_maestro.py   # after extracting MAESTRO to data/
+docker compose run --rm app python preprocess.py
+docker compose run --rm app python mert_retrieval.py
+```
+
+Jupyter for notebooks:
+```bash
+docker compose run --rm jupyter
+# Then open http://localhost:8888
+```
+
+## Pipeline
+
+### 1. Prepare MAESTRO (100 pieces)
+
+After downloading and extracting [MAESTRO](https://magenta.tensorflow.org/datasets/maestro):
+
+```bash
+python prepare_maestro.py
+```
+
+This copies 100 audio files to `data/raw_audio/` as `piece_001.wav`, `piece_002.wav`, etc.
+
+### 2. Preprocess
+
+Standardize to 16kHz, mono, normalized:
+
+```bash
+python preprocess.py
+```
+
+Output: `data/processed/`
+
+### 3. Baseline: CQT + Cosine Similarity
+
+Classical MIR baseline (sanity check):
+
+```bash
+jupyter notebook baseline_cqt.ipynb
+```
+
+### 4. MERT + FAISS Retrieval
+
+Modern baseline with pretrained MERT embeddings:
+
+```bash
+# Build index and run demo query
+python mert_retrieval.py
+
+# Build index only
+python mert_retrieval.py --build-only
+
+# Query a specific file
+python mert_retrieval.py --query path/to/query.wav --k 5
+```
+
+## Directory Structure
+
+```
+data/
+  maestro-v3.0.0/     # Extracted MAESTRO (year subdirs)
+  maestro-v3.0.0.csv
+  raw_audio/          # piece_001.wav, ...
+  processed/          # Normalized 16kHz
+  embeddings/         # mert.index, names.npy
+```

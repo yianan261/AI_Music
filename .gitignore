@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+.pytest_cache/
+.mypy_cache/
+
+# Virtual envs
+.venv/
+venv/
+env/
+
+# Environment
+.env
+.envrc
+
+# Data & artifacts (large; download MAESTRO separately)
+data/
+checkpoints/
+*.npy
+*.pt
+*.pth
+*.index
+
+# Media
+*.wav
+*.mp3
+*.midi
+*.mid
+
+# Archives
+*.zip
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
