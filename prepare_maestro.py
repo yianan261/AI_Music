@@ -24,27 +24,34 @@ def main():
     df = pd.read_csv(csv_path)
     RAW_AUDIO_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Try to find MAESTRO root: could be data/maestro-v3.0.0 or data/
-    audio_root = MAESTRO_DIR if MAESTRO_DIR.exists() else Path("data")
-    if not (audio_root / df.iloc[0]["audio_filename"]).exists():
-        audio_root = Path("data")
+    if not MAESTRO_DIR.exists():
+        raise FileNotFoundError(
+            f"MAESTRO directory not found at {MAESTRO_DIR}. "
+            "Extract maestro-v3.0.0.zip into data/ first."
+        )
+    audio_root = MAESTRO_DIR
 
-    # Select first N pieces
-    selected = df.head(N_PIECES)
+    # Select first N pieces that actually exist (handles partial extraction)
+    selected = []
+    for _, row in df.iterrows():
+        if len(selected) >= N_PIECES:
+            break
+        src = audio_root / row["audio_filename"]
+        if src.exists():
+            selected.append(row)
 
-    for i, row in selected.iterrows():
+    for i, row in enumerate(selected):
         audio_rel = row["audio_filename"]
         src = audio_root / audio_rel
-        dst = RAW_AUDIO_DIR / f"piece_{i + 1:03d}.wav"  # piece_001.wav, piece_002.wav, ...
-
-        if not src.exists():
-            print(f"Skipping (not found): {src}")
-            continue
+        dst = RAW_AUDIO_DIR / f"piece_{i + 1:03d}.wav"
 
         shutil.copy2(src, dst)
         print(f"Copied: {audio_rel} -> {dst.name}")
 
-    print(f"\nPrepared {len(list(RAW_AUDIO_DIR.glob('*.wav')))} pieces in {RAW_AUDIO_DIR}")
+    n = len(selected)
+    print(f"\nPrepared {n} pieces in {RAW_AUDIO_DIR}")
+    if n < N_PIECES:
+        print(f"Note: Only {n} of {N_PIECES} requested. Extract more years from the zip if needed.")
 
 if __name__ == "__main__":
     main()
