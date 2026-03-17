@@ -12,7 +12,7 @@ from ai_music.config import (
     MAX_DURATION_SEC,
     MERT_SR,
     MODEL_ID,
-    PROCESSED_DIR,
+    PROCESSED_24K_DIR,
 )
 
 
@@ -61,8 +61,8 @@ def extract_mert_embedding(path: str | Path, model, processor, device) -> np.nda
 
 
 def build_database(model, processor, device, processed_dir: Path | None = None) -> dict:
-    """Build embedding database from processed audio."""
-    processed_dir = processed_dir or PROCESSED_DIR
+    """Build embedding database from processed audio (24kHz)."""
+    processed_dir = processed_dir or PROCESSED_24K_DIR
     database = {}
     for f in sorted(processed_dir.glob("*.wav")):
         emb = extract_mert_embedding(str(f), model, processor, device)

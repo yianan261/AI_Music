@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import faiss
 
-from ai_music.config import EMBEDDING_DIR, PROCESSED_DIR
+from ai_music.config import EMBEDDING_DIR, PROCESSED_24K_DIR
 from ai_music.retrieval.faiss_index import build_faiss_index
 from ai_music.retrieval.mert import build_database, load_mert
 

@@ -5,7 +5,7 @@ import argparse
 import numpy as np
 import faiss
 
-from ai_music.config import EMBEDDING_DIR, PROCESSED_DIR
+from ai_music.config import EMBEDDING_DIR, PROCESSED_24K_DIR
 from ai_music.retrieval.mert import load_mert, search
 
 
@@ -37,7 +37,7 @@ def main():
     if args.query:
         query_path = args.query
     else:
-        first = next(PROCESSED_DIR.glob("*.wav"), None)
+        first = next(PROCESSED_24K_DIR.glob("*.wav"), None)
         if not first:
             raise FileNotFoundError(
                 "No processed files found and no --query given. "

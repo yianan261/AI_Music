@@ -49,7 +49,7 @@ Standardize to 16kHz, mono, normalized:
 python scripts/preprocess.py
 ```
 
-Output: `data/processed/`
+Output: `data/processed_16k/` and `data/processed_24k/`
 
 ### 3. Baseline: CQT + Cosine Similarity
 
@@ -71,7 +71,7 @@ This shows memory per GPU and suggests one that is *likely free*—advisory only
 Then run explicitly:
 
 ```bash
-CUDA_VISIBLE_DEVICES=2 python scripts/run_mert_retrieval.py --query data/processed/piece_001.wav
+CUDA_VISIBLE_DEVICES=2 python scripts/run_mert_retrieval.py --query data/processed_24k/piece_001.wav
 ```
 
 **Shared-server protocol:** inspect → choose GPU → set `CUDA_VISIBLE_DEVICES` → run.
@@ -85,7 +85,7 @@ Modern baseline with pretrained MERT embeddings:
 python scripts/build_mert_index.py
 
 # Run retrieval query
-python scripts/run_mert_retrieval.py --query data/processed/piece_001.wav --k 5
+python scripts/run_mert_retrieval.py --query data/processed_24k/piece_001.wav --k 5
 
 # Demo: query with first processed file
 python scripts/run_mert_retrieval.py --k 5
@@ -143,7 +143,8 @@ AI_Music/
     maestro-v3.0.0/   # Extracted MAESTRO (year subdirs)
     maestro-v3.0.0.csv
     raw_audio/        # piece_001.wav, ...
-    processed/        # Normalized 16kHz
+    processed_16k/    # 16kHz for CQT baseline
+    processed_24k/    # 24kHz for MERT
     embeddings/       # mert.index, names.npy
     metadata/         # maestro_mapping.csv (piece_id -> audio_filename, composer, title, split)
     evaluation_queries/
@@ -156,5 +157,5 @@ AI_Music/
 ```python
 from ai_music.data import prepare_maestro, preprocess
 from ai_music.retrieval import load_mert, extract_mert_embedding, build_faiss_index
-from ai_music.config import PROCESSED_DIR, RAW_AUDIO_DIR
+from ai_music.config import PROCESSED_16K_DIR, PROCESSED_24K_DIR, RAW_AUDIO_DIR
 ```

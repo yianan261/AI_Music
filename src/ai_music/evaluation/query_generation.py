@@ -34,14 +34,16 @@ def extract_snippet(audio_path: Path, duration_sec: float, start_offset_sec: flo
 
 
 def generate_snippets(
-    processed_dir: Path | None = None,
+    processed_dir: Path | None = None,  # Source for snippets (24k for eval)
     durations_sec: list[float] | None = None,
     start_offset_sec: float = 5.0,
     output_dir: Path | None = None,
     seed: int = 42,
+    sr: int | None = None,
 ) -> list[QuerySample]:
-    """Generate query snippets from processed audio."""
-    processed_dir = processed_dir or config.PROCESSED_DIR
+    """Generate query snippets from processed audio (default: 24k for MERT eval)."""
+    processed_dir = processed_dir or config.PROCESSED_24K_DIR
+    sr = sr or config.MERT_SR
     durations_sec = durations_sec or [5.0, 10.0]
     use_temp = output_dir is None
     output_dir = Path(tempfile.mkdtemp(prefix="ai_music_evaluation_")) if use_temp else Path(output_dir)
@@ -51,8 +53,8 @@ def generate_snippets(
     samples = []
     for path in sorted(processed_dir.glob("*.wav")):
         for dur in durations_sec:
-            y_arr, sr = extract_snippet(path, dur, start_offset_sec)
+            y_arr, out_sr = extract_snippet(path, dur, start_offset_sec, sr=sr)
             out_path = output_dir / f"{path.stem}_{int(dur)}s.wav"
-            sf.write(out_path, y_arr, sr)
+            sf.write(out_path, y_arr, out_sr)
             samples.append(QuerySample(snippet_path=out_path, ground_truth=path.name, duration_sec=dur))
     return samples

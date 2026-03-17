@@ -11,7 +11,7 @@ from ai_music.evaluation.query_generation import QuerySample, generate_snippets
 def run_cqt_eval(samples: list[QuerySample], processed_dir: Path | None = None) -> list[list[str]]:
     from ai_music.retrieval.cqt_baseline import build_cqt_database, cqt_search
 
-    processed_dir = processed_dir or config.PROCESSED_DIR
+    processed_dir = processed_dir or config.PROCESSED_16K_DIR
     database = build_cqt_database(processed_dir)
     return [[r[0] for r in cqt_search(q.snippet_path, database, k=len(database))] for q in samples]
 
@@ -20,7 +20,7 @@ def run_mert_eval(samples: list[QuerySample], processed_dir: Path | None = None,
     from ai_music.retrieval.faiss_index import build_faiss_index
     from ai_music.retrieval.mert import build_database, load_mert, search
 
-    processed_dir = processed_dir or config.PROCESSED_DIR
+    processed_dir = processed_dir or config.PROCESSED_24K_DIR
     model, processor, dev = load_mert(device=device)
     database = build_database(model, processor, dev, processed_dir=processed_dir)
     index, names = build_faiss_index(database)
