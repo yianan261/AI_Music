@@ -2,7 +2,7 @@
 
 from ai_music.retrieval.mert import load_mert, extract_mert_embedding, build_database, search
 from ai_music.retrieval.faiss_index import build_faiss_index
-from ai_music.retrieval.cqt_baseline import extract_cqt_embedding
+from ai_music.retrieval.cqt_baseline import extract_cqt_embedding, build_cqt_database, cqt_search
 
 __all__ = [
     "load_mert",
@@ -11,4 +11,6 @@ __all__ = [
     "build_faiss_index",
     "search",
     "extract_cqt_embedding",
+    "build_cqt_database",
+    "cqt_search",
 ]

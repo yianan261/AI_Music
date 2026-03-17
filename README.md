@@ -71,6 +71,23 @@ python scripts/mert_retrieval.py --build-only
 python scripts/mert_retrieval.py --query data/processed/piece_001.wav --k 5
 ```
 
+### 5. Structured Evaluation
+
+Run snippet retrieval evaluation (Top-1, Top-5, MRR) comparing CQT vs frozen MERT:
+
+```bash
+# Full eval: 5s and 10s snippets, both baselines
+python scripts/run_eval.py
+
+# CQT only, 10s snippets
+python scripts/run_eval.py --baselines cqt --durations 10
+
+# MERT only with GPU 2
+python scripts/run_eval.py --baselines mert --gpu 2
+```
+
+Queries are same-recording snippets (5s or 10s from each piece, starting at 5s offset). Snippets are written to `data/eval_queries/` by default.
+
 ## Directory Structure
 
 ```
@@ -79,12 +96,13 @@ AI_Music/
     config.py         # Paths, constants
     data/             # prepare_maestro, preprocess
     retrieval/        # mert, cqt_baseline, faiss_index
-    eval/             # metrics, query_generation
+    eval/             # metrics, query_generation, run_eval
     utils/            # audio, paths
   scripts/            # Thin entry points
     prepare_maestro.py
     preprocess.py
     mert_retrieval.py
+    run_eval.py
   notebooks/
   tests/
   data/
@@ -93,6 +111,7 @@ AI_Music/
     raw_audio/        # piece_001.wav, ...
     processed/        # Normalized 16kHz
     embeddings/       # mert.index, names.npy
+    eval_queries/     # generated snippet queries
   pyproject.toml
   README.md
 ```

@@ -11,6 +11,7 @@ MAESTRO_DIR = DATA_DIR / "maestro-v3.0.0"
 RAW_AUDIO_DIR = DATA_DIR / "raw_audio"
 PROCESSED_DIR = DATA_DIR / "processed"
 EMBEDDING_DIR = DATA_DIR / "embeddings"
+EVAL_QUERIES_DIR = DATA_DIR / "eval_queries"  # Generated snippet queries
 
 # MAESTRO
 MAESTRO_CSV = PROJECT_ROOT / "data" / "maestro-v3.0.0.csv"

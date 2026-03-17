@@ -14,6 +14,7 @@ src/ai_music/data/preprocess.py
 src/ai_music/eval/__init__.py
 src/ai_music/eval/metrics.py
 src/ai_music/eval/query_generation.py
+src/ai_music/eval/run_eval.py
 src/ai_music/retrieval/__init__.py
 src/ai_music/retrieval/cqt_baseline.py
 src/ai_music/retrieval/faiss_index.py
@@ -23,3 +24,4 @@ src/ai_music/utils/audio.py
 src/ai_music/utils/paths.py
 tests/test_audio.py
 tests/test_config.py
+tests/test_eval.py
