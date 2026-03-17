@@ -1,0 +1,25 @@
+"""Configuration: paths, constants, model IDs."""
+
+from pathlib import Path
+
+from ai_music.utils.paths import get_project_root
+
+# Data paths
+PROJECT_ROOT = get_project_root()
+DATA_DIR = PROJECT_ROOT / "data"
+MAESTRO_DIR = DATA_DIR / "maestro-v3.0.0"
+RAW_AUDIO_DIR = DATA_DIR / "raw_audio"
+PROCESSED_DIR = DATA_DIR / "processed"
+EMBEDDING_DIR = DATA_DIR / "embeddings"
+
+# MAESTRO
+MAESTRO_CSV = PROJECT_ROOT / "data" / "maestro-v3.0.0.csv"
+N_PIECES = 100
+
+# Audio
+TARGET_SR = 16000  # For CQT baseline compatibility
+MERT_SR = 24000  # MERT-v1-330M expects 24kHz
+MAX_DURATION_SEC = 30  # Truncate long audio to avoid GPU OOM
+
+# Model
+MODEL_ID = "m-a-p/MERT-v1-330M"

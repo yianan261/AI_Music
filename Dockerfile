@@ -9,9 +9,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Python deps
+# Python deps & package
+COPY pyproject.toml .
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY src/ ./src/
+RUN pip install --no-cache-dir -e .
 
 # App code
 COPY scripts/ ./scripts/

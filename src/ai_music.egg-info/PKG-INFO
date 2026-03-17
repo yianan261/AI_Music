@@ -1,3 +1,26 @@
+Metadata-Version: 2.4
+Name: ai-music
+Version: 0.1.0
+Summary: Music retrieval with MERT and CQT baselines
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: torch
+Requires-Dist: torchaudio
+Requires-Dist: librosa
+Requires-Dist: numpy<2.0.0
+Requires-Dist: scipy
+Requires-Dist: scikit-learn
+Requires-Dist: faiss-gpu
+Requires-Dist: transformers
+Requires-Dist: soundfile
+Requires-Dist: pandas
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-cov; extra == "dev"
+Dynamic: license-file
+
 # AI Music - ID and Accuracy Project
 
 Music retrieval: given a short snippet, retrieve the correct piece from a database.

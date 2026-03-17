@@ -1,0 +1,14 @@
+torch
+torchaudio
+librosa
+numpy<2.0.0
+scipy
+scikit-learn
+faiss-gpu
+transformers
+soundfile
+pandas
+
+[dev]
+pytest
+pytest-cov
