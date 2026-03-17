@@ -59,15 +59,22 @@ Classical MIR baseline (sanity check):
 jupyter notebook notebooks/baseline_cqt.ipynb
 ```
 
-### 4. (Optional) Check GPU availability
+### 4. (Optional) Check GPU status (advisory, for shared servers)
 
-Before running GPU-heavy scripts, check which device will be used:
+Before running GPU-heavy scripts on a shared server:
 
 ```bash
-python scripts/check_gpu.py
+python scripts/check_gpus.py
 ```
 
-When `--gpu` is not specified, the MERT scripts auto-select the GPU with the most free memory.
+This shows memory per GPU and suggests one that is *likely free*—advisory only, not guaranteed.
+Then run explicitly:
+
+```bash
+CUDA_VISIBLE_DEVICES=2 python scripts/run_mert_retrieval.py --query data/processed/piece_001.wav
+```
+
+**Shared-server protocol:** inspect → choose GPU → set `CUDA_VISIBLE_DEVICES` → run.
 
 ### 5. MERT + FAISS Retrieval
 
@@ -101,6 +108,18 @@ python scripts/run_eval.py --baselines mert --gpu 2
 
 Queries are same-recording snippets (5s or 10s from each piece, starting at 5s offset). Snippets are written to `data/evaluation_queries/` by default.
 
+## Shared-server protocol
+
+On unmanaged shared servers (e.g. academic GPU nodes):
+
+- Run `python scripts/check_gpus.py` or `nvidia-smi` before launching
+- Choose a lightly used GPU
+- Run with `CUDA_VISIBLE_DEVICES=<id> python scripts/...`
+- Avoid GPUs with active compute unless sharing is agreed
+- Announce long jobs to teammates
+
+"Likely free" is advisory—low memory now does not guarantee availability.
+
 ## Directory Structure
 
 ```
@@ -110,14 +129,14 @@ AI_Music/
     data/             # prepare_maestro, preprocess
     retrieval/        # mert, cqt_baseline, faiss_index
     evaluation/      # metrics, query_generation, run_eval
-    utils/            # audio, paths
+    utils/            # audio, paths, device (GPU selection)
   scripts/            # Thin entry points
     prepare_maestro.py
     preprocess.py
     build_mert_index.py
     run_mert_retrieval.py
     run_eval.py
-    check_gpu.py
+    check_gpus.py
   notebooks/
   tests/
   data/
