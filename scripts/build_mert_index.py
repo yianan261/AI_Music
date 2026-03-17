@@ -8,6 +8,7 @@ import faiss
 from ai_music.config import EMBEDDING_DIR, PROCESSED_24K_DIR
 from ai_music.retrieval.faiss_index import build_faiss_index
 from ai_music.retrieval.mert import build_database, load_mert
+from ai_music.utils.device import select_device
 
 
 def main():
@@ -20,7 +21,8 @@ def main():
     )
     args = parser.parse_args()
 
-    model, processor, device = load_mert(gpu_id=args.gpu)
+    device = select_device(args.gpu)
+    model, processor, device = load_mert(device=device)
     print(f"Loaded MERT on {device}")
 
     database = build_database(model, processor, device)

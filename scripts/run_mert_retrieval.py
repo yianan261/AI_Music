@@ -7,6 +7,7 @@ import faiss
 
 from ai_music.config import EMBEDDING_DIR, PROCESSED_24K_DIR
 from ai_music.retrieval.mert import load_mert, search
+from ai_music.utils.device import select_device
 
 
 def main():
@@ -32,7 +33,8 @@ def main():
     index = faiss.read_index(str(index_path))
     names = np.load(names_path, allow_pickle=True).tolist()
 
-    model, processor, device = load_mert(gpu_id=args.gpu)
+    device = select_device(args.gpu)
+    model, processor, device = load_mert(device=device)
 
     if args.query:
         query_path = args.query
