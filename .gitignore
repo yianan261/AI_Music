@@ -17,6 +17,7 @@ env/
 
 # Data & artifacts (large; download MAESTRO separately)
 data/
+results/
 checkpoints/
 *.npy
 *.pt

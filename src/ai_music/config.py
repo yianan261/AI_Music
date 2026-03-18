@@ -14,6 +14,7 @@ PROCESSED_24K_DIR = DATA_DIR / "processed_24k"  # For MERT extraction
 EMBEDDING_DIR = DATA_DIR / "embeddings"
 METADATA_DIR = DATA_DIR / "metadata"  # Mapping files (piece_001.wav -> original metadata)
 EVALUATION_QUERIES_DIR = DATA_DIR / "evaluation_queries"  # Generated snippet queries
+RESULTS_DIR = PROJECT_ROOT / "results"  # Evaluation outputs (CSVs, per-query logs)
 
 # MAESTRO
 MAESTRO_CSV = PROJECT_ROOT / "data" / "maestro-v3.0.0.csv"
