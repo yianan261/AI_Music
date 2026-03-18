@@ -50,6 +50,12 @@ def run_evaluation(
     baselines = baselines or ["cqt", "mert"]
     queries_dir = output_dir or config.EVALUATION_QUERIES_DIR
 
+    # Baseline-specific snippet sources: CQT from 16k, MERT from 24k (matched to each DB)
+    BASELINE_SOURCES = {
+        "cqt": (config.PROCESSED_16K_DIR, config.TARGET_SR),
+        "mert": (config.PROCESSED_24K_DIR, config.MERT_SR),
+    }
+
     # Results go under results/<eval_type>/
     results_root = config.RESULTS_DIR / eval_type
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -58,21 +64,26 @@ def run_evaluation(
 
     augmentation_type = "none" if eval_type == "same_recording" else eval_type
 
-    print(f"Generating query snippets (eval_type={eval_type}, randomize_start={randomize_start})...")
-    samples = generate_snippets(
-        durations_sec=list(durations_sec),
-        n_snippets_per_piece=n_snippets_per_piece,
-        randomize_start=randomize_start,
-        output_dir=queries_dir,
-        seed=seed,
-        augmentation_type=augmentation_type,
-    )
-    print(f"  Generated {len(samples)} queries")
-    gt = [q.ground_truth for q in samples]
     results = {}
 
     for baseline in baselines:
+        processed_dir, sr = BASELINE_SOURCES[baseline]
+        baseline_queries_dir = Path(queries_dir) / baseline
         print(f"\nRunning {baseline}...")
+        print(f"  Generating snippets from {processed_dir.name} ({sr} Hz)...")
+        samples = generate_snippets(
+            processed_dir=processed_dir,
+            durations_sec=list(durations_sec),
+            n_snippets_per_piece=n_snippets_per_piece,
+            randomize_start=randomize_start,
+            output_dir=baseline_queries_dir,
+            seed=seed,
+            sr=sr,
+            augmentation_type=augmentation_type,
+        )
+        print(f"  Generated {len(samples)} queries")
+        gt = [q.ground_truth for q in samples]
+
         rankings = run_cqt_eval(samples) if baseline == "cqt" else run_mert_eval(samples, device=device)
         metrics = compute_all_metrics(rankings, gt)
         results[baseline] = {"overall": metrics}
