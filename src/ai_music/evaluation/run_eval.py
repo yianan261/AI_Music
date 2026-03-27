@@ -62,7 +62,10 @@ def run_evaluation(
     run_dir = results_root / timestamp
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    AUGMENTATION_TYPES = ("none", "tempo_up", "tempo_down", "pitch_up", "pitch_down", "noise")
     augmentation_type = "none" if eval_type == "same_recording" else eval_type
+    if augmentation_type not in AUGMENTATION_TYPES:
+        raise ValueError(f"Unknown augmentation type: {augmentation_type}. Choose from {AUGMENTATION_TYPES}")
 
     results = {}
 
@@ -129,8 +132,8 @@ def main():
         "--eval-type",
         type=str,
         default="same_recording",
-        choices=["same_recording", "augmented", "cross_performance"],
-        help="Evaluation type (augmented/cross_performance are stubs for now)",
+        choices=["same_recording", "tempo_up", "tempo_down", "pitch_up", "pitch_down", "noise", "cross_performance"],
+        help="Evaluation type: same_recording (no aug), or an augmentation name",
     )
     parser.add_argument("--n-snippets", type=int, default=1, help="Snippets per (piece, duration)")
     parser.add_argument("--no-randomize-start", action="store_true", help="Use fixed 5s start instead of random")

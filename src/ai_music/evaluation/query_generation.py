@@ -1,10 +1,11 @@
-"""Query generation for evaluation: same-recording snippet extraction."""
+"""Query generation for evaluation: same-recording snippet extraction with augmentations."""
 
 import random
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+import librosa
 import numpy as np
 import soundfile as sf
 
@@ -20,7 +21,33 @@ class QuerySample:
     ground_truth: str
     duration_sec: float
     start_offset_sec: float = 5.0
-    augmentation_type: str = "none"  # "none", "tempo", "noise", etc.
+    augmentation_type: str = "none"  # "none", "tempo_up", "tempo_down", "pitch_up", "noise", etc.
+
+
+def apply_augmentation(y: np.ndarray, sr: int, aug_type: str) -> np.ndarray:
+    """Apply audio augmentation to a snippet.
+
+    Supported aug_type values:
+        "tempo_up"   – +10% tempo (time-stretch rate=1.1)
+        "tempo_down" – -15% tempo (time-stretch rate=0.85)
+        "pitch_up"   – +1 semitone
+        "pitch_down" – -1 semitone
+        "noise"      – additive white noise (σ=0.005)
+        "none"       – no-op
+    """
+    if aug_type == "tempo_up":
+        return librosa.effects.time_stretch(y, rate=1.1)
+    elif aug_type == "tempo_down":
+        return librosa.effects.time_stretch(y, rate=0.85)
+    elif aug_type == "pitch_up":
+        return librosa.effects.pitch_shift(y, sr=sr, n_steps=1)
+    elif aug_type == "pitch_down":
+        return librosa.effects.pitch_shift(y, sr=sr, n_steps=-1)
+    elif aug_type == "noise":
+        rng = np.random.default_rng()
+        noise = rng.normal(0, 0.005, y.shape).astype(y.dtype)
+        return y + noise
+    return y
 
 
 def extract_snippet(
@@ -80,7 +107,7 @@ def generate_snippets(
         output_dir: Where to write snippet WAVs.
         seed: Random seed for reproducibility.
         sr: Sample rate for output.
-        augmentation_type: "none", "tempo", "noise", etc. (for logging; augmentation not yet applied).
+        augmentation_type: "none", "tempo_up", "tempo_down", "pitch_up", "pitch_down", "noise".
 
     Returns:
         List of QuerySample.
@@ -110,6 +137,8 @@ def generate_snippets(
                     start = start_offset_sec
 
                 y_arr, out_sr = extract_snippet(path, dur, start, sr=sr)
+                if augmentation_type != "none":
+                    y_arr = apply_augmentation(y_arr, out_sr, augmentation_type)
                 stem = path.stem
                 suffix = f"_{augmentation_type}" if augmentation_type != "none" else ""
                 out_name = f"{stem}_{int(dur)}s_{i}" if n_snippets_per_piece > 1 else f"{stem}_{int(dur)}s"
