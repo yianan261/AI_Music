@@ -11,8 +11,6 @@ from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
-from transformers import Wav2Vec2FeatureExtractor
-
 from ai_music import config
 from ai_music.data.dataset import MusicTripletDataset
 from ai_music.training.losses import TripletLoss
@@ -79,7 +77,7 @@ def run_training(
 
     hidden_dim = mert_model.config.hidden_size  # typically 768
     head = ProjectionHead(input_dim=hidden_dim, output_dim=output_dim)
-    model = MERTEmbedder(mert_model, head, freeze_backbone=True).to(device)
+    model = MERTEmbedder(mert_model, processor, head, freeze_backbone=True).to(device)
 
     trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
     total = sum(p.numel() for p in model.parameters())
@@ -105,10 +103,23 @@ def run_training(
     optimizer = torch.optim.Adam(model.projection.parameters(), lr=lr)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
 
-    print(f"Training for {epochs} epochs, {len(dataset)} pieces, batch_size={batch_size}")
+    # Resume from checkpoint if one exists
+    start_epoch = 1
     best_loss = float("inf")
+    resume_path = save_dir / "checkpoint_latest.pt"
+    if resume_path.exists():
+        ckpt = torch.load(resume_path, map_location=device, weights_only=False)
+        model.projection.load_state_dict(ckpt["projection"])
+        optimizer.load_state_dict(ckpt["optimizer"])
+        scheduler.load_state_dict(ckpt["scheduler"])
+        start_epoch = ckpt["epoch"] + 1
+        best_loss = ckpt["best_loss"]
+        print(f"Resumed from epoch {ckpt['epoch']}, best_loss={best_loss:.4f}")
 
-    for epoch in range(1, epochs + 1):
+    print(f"Training for {epochs} epochs (starting at {start_epoch}), {len(dataset)} pieces, batch_size={batch_size}")
+    print(f"Augmentation pipeline: {dataset.augment}")
+
+    for epoch in range(start_epoch, epochs + 1):
         avg_loss = train_one_epoch(model, processor, loader, optimizer, criterion, device)
         scheduler.step()
         lr_now = scheduler.get_last_lr()[0]
@@ -116,14 +127,22 @@ def run_training(
         status = ""
         if avg_loss < best_loss:
             best_loss = avg_loss
-            ckpt_path = save_dir / "projection_best.pt"
-            torch.save(model.projection.state_dict(), ckpt_path)
-            status = " [saved]"
+            torch.save(model.projection.state_dict(), save_dir / "projection_best.pt")
+            status = " [best]"
+
+        # Save full checkpoint every epoch for resume
+        torch.save({
+            "epoch": epoch,
+            "projection": model.projection.state_dict(),
+            "optimizer": optimizer.state_dict(),
+            "scheduler": scheduler.state_dict(),
+            "best_loss": best_loss,
+            "loss": avg_loss,
+        }, resume_path)
 
         print(f"  Epoch {epoch:3d}/{epochs}  loss={avg_loss:.4f}  lr={lr_now:.2e}{status}")
 
-    final_path = save_dir / "projection_final.pt"
-    torch.save(model.projection.state_dict(), final_path)
+    torch.save(model.projection.state_dict(), save_dir / "projection_final.pt")
     print(f"Training complete. Best loss: {best_loss:.4f}")
     print(f"Checkpoints: {save_dir}")
     return model
@@ -139,6 +158,7 @@ def main():
     parser.add_argument("--snippet-duration", type=float, default=10.0)
     parser.add_argument("--output-dim", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--save-dir", type=Path, default=None, help="Checkpoint directory")
     args = parser.parse_args()
 
     from ai_music.utils.device import select_device
@@ -152,5 +172,6 @@ def main():
         margin=args.margin,
         snippet_duration=args.snippet_duration,
         output_dim=args.output_dim,
+        save_dir=args.save_dir,
         seed=args.seed,
     )

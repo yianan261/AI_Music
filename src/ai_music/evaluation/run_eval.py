@@ -4,6 +4,9 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
+import torch
+
 from ai_music import config
 from ai_music.evaluation.metrics import build_results_df, compute_all_metrics, save_results_csv
 from ai_music.evaluation.query_generation import QuerySample, generate_snippets
@@ -28,6 +31,58 @@ def run_mert_eval(samples: list[QuerySample], processed_dir: Path | None = None,
     return [[r[0] for r in search(q.snippet_path, index, names, model, processor, dev, k=len(names))] for q in samples]
 
 
+def _embed_file_finetuned(path: Path, embedder, device: str) -> np.ndarray:
+    """Run a single audio file through the fine-tuned MERT+projection pipeline."""
+    from ai_music.utils.audio import load_audio
+
+    y, sr = load_audio(str(path), sr=config.MERT_SR, mono=True)
+    max_samples = int(config.MAX_DURATION_SEC * sr)
+    if len(y) > max_samples:
+        y = y[:max_samples]
+    waveform = torch.from_numpy(y.astype(np.float32)).unsqueeze(0).to(device)
+    embedder.eval()
+    with torch.no_grad():
+        emb = embedder(waveform)
+    return emb.squeeze(0).cpu().numpy()
+
+
+def run_mert_finetuned_eval(
+    samples: list[QuerySample],
+    checkpoint_path: Path,
+    processed_dir: Path | None = None,
+    device: str | None = None,
+) -> list[list[str]]:
+    """Evaluate using MERT + fine-tuned projection head."""
+    import faiss
+    from ai_music.retrieval.mert import load_mert
+    from ai_music.training.model import MERTEmbedder, ProjectionHead
+
+    processed_dir = processed_dir or config.PROCESSED_24K_DIR
+    mert_model, processor, dev = load_mert(device=device)
+
+    head = ProjectionHead(input_dim=mert_model.config.hidden_size)
+    head.load_state_dict(torch.load(checkpoint_path, map_location=dev, weights_only=True))
+    embedder = MERTEmbedder(mert_model, processor, head, freeze_backbone=True).to(dev)
+    embedder.eval()
+
+    # Build database embeddings
+    db_files = sorted(processed_dir.glob("*.wav"))
+    names = [f.name for f in db_files]
+    db_embs = np.stack([_embed_file_finetuned(f, embedder, dev) for f in db_files]).astype(np.float32)
+    faiss.normalize_L2(db_embs)
+    index = faiss.IndexFlatIP(db_embs.shape[1])
+    index.add(db_embs)
+
+    # Query
+    rankings = []
+    for q in samples:
+        q_emb = _embed_file_finetuned(q.snippet_path, embedder, dev).reshape(1, -1).astype(np.float32)
+        faiss.normalize_L2(q_emb)
+        D, I = index.search(q_emb, len(names))
+        rankings.append([names[i] for i in I[0]])
+    return rankings
+
+
 def run_evaluation(
     durations_sec=None,
     baselines=None,
@@ -37,6 +92,7 @@ def run_evaluation(
     n_snippets_per_piece: int = 1,
     randomize_start: bool = True,
     seed: int = 42,
+    checkpoint: Path | None = None,
 ):
     """
     Run evaluation and save results to results/.
@@ -50,10 +106,18 @@ def run_evaluation(
     baselines = baselines or ["cqt", "mert"]
     queries_dir = output_dir or config.EVALUATION_QUERIES_DIR
 
-    # Baseline-specific snippet sources: CQT from 16k, MERT from 24k (matched to each DB)
+    if "mert_finetuned" in baselines and checkpoint is None:
+        default_ckpt = config.PROJECT_ROOT / "checkpoints" / "projection_best.pt"
+        if default_ckpt.exists():
+            checkpoint = default_ckpt
+        else:
+            raise ValueError("--checkpoint required for mert_finetuned baseline")
+
+    # Baseline-specific snippet sources: CQT from 16k, MERT/fine-tuned from 24k
     BASELINE_SOURCES = {
         "cqt": (config.PROCESSED_16K_DIR, config.TARGET_SR),
         "mert": (config.PROCESSED_24K_DIR, config.MERT_SR),
+        "mert_finetuned": (config.PROCESSED_24K_DIR, config.MERT_SR),
     }
 
     # Results go under results/<eval_type>/
@@ -87,7 +151,12 @@ def run_evaluation(
         print(f"  Generated {len(samples)} queries")
         gt = [q.ground_truth for q in samples]
 
-        rankings = run_cqt_eval(samples) if baseline == "cqt" else run_mert_eval(samples, device=device)
+        if baseline == "cqt":
+            rankings = run_cqt_eval(samples)
+        elif baseline == "mert_finetuned":
+            rankings = run_mert_finetuned_eval(samples, checkpoint, device=device)
+        else:
+            rankings = run_mert_eval(samples, device=device)
         metrics = compute_all_metrics(rankings, gt)
         results[baseline] = {"overall": metrics}
         print(f"  Top-1: {metrics['top1']:.2%}  Top-5: {metrics['top5']:.2%}  MRR: {metrics['mrr']:.4f}")
@@ -125,7 +194,7 @@ def run_evaluation(
 def main():
     parser = argparse.ArgumentParser(description="Run snippet retrieval evaluation")
     parser.add_argument("--durations", type=float, nargs="+", default=[5.0, 10.0], help="Snippet durations")
-    parser.add_argument("--baselines", type=str, nargs="+", default=["cqt", "mert"], choices=["cqt", "mert"])
+    parser.add_argument("--baselines", type=str, nargs="+", default=["cqt", "mert"], choices=["cqt", "mert", "mert_finetuned"])
     parser.add_argument("--output-dir", type=Path, default=None, help="Where to save query snippets")
     parser.add_argument("--gpu", type=int, default=None, help="GPU ID for MERT")
     parser.add_argument(
@@ -138,6 +207,7 @@ def main():
     parser.add_argument("--n-snippets", type=int, default=1, help="Snippets per (piece, duration)")
     parser.add_argument("--no-randomize-start", action="store_true", help="Use fixed 5s start instead of random")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    parser.add_argument("--checkpoint", type=Path, default=None, help="Path to projection_best.pt for mert_finetuned")
     args = parser.parse_args()
 
     from ai_music.utils.device import select_device
@@ -151,4 +221,5 @@ def main():
         n_snippets_per_piece=args.n_snippets,
         randomize_start=not args.no_randomize_start,
         seed=args.seed,
+        checkpoint=args.checkpoint,
     )

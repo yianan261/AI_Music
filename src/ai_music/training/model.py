@@ -39,11 +39,14 @@ class MERTEmbedder(nn.Module):
     """Frozen MERT + trainable projection head.
 
     Extracts MERT last-hidden-state, pools over time, then projects.
+    The processor (Wav2Vec2FeatureExtractor) handles per-sample
+    normalization to match how MERT was pre-trained.
     """
 
-    def __init__(self, mert_model, projection_head: ProjectionHead, freeze_backbone: bool = True):
+    def __init__(self, mert_model, processor, projection_head: ProjectionHead, freeze_backbone: bool = True):
         super().__init__()
         self.backbone = mert_model
+        self.processor = processor
         self.projection = projection_head
 
         if freeze_backbone:
@@ -57,8 +60,21 @@ class MERTEmbedder(nn.Module):
             for p in layer.parameters():
                 p.requires_grad = True
 
-    def forward(self, input_values: torch.Tensor) -> torch.Tensor:
-        """input_values: (B, T) raw waveform at 24kHz → (B, output_dim) embedding."""
+    def _preprocess(self, waveforms: torch.Tensor) -> torch.Tensor:
+        """Run processor on a batch of waveforms: (B, T) → normalized input_values."""
+        device = waveforms.device
+        np_batch = waveforms.cpu().numpy()
+        inputs = self.processor(
+            [sample for sample in np_batch],
+            sampling_rate=24000,
+            return_tensors="pt",
+            padding=True,
+        )
+        return inputs["input_values"].to(device)
+
+    def forward(self, waveforms: torch.Tensor) -> torch.Tensor:
+        """waveforms: (B, T) raw waveform at 24kHz → (B, output_dim) embedding."""
+        input_values = self._preprocess(waveforms)
         with torch.set_grad_enabled(any(p.requires_grad for p in self.backbone.parameters())):
             outputs = self.backbone(input_values, output_hidden_states=True)
         pooled = outputs.last_hidden_state.mean(dim=1)  # (B, 768)
