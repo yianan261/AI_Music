@@ -102,7 +102,7 @@ def run_evaluation(
         - augmented: tempo/noise augmented snippets (stub for now)
         - cross_performance: different performance of same piece (stub for now)
     """
-    durations_sec = durations_sec or [5.0, 10.0]
+    durations_sec = durations_sec or [10.0, 15.0]
     baselines = baselines or ["cqt", "mert"]
     queries_dir = output_dir or config.EVALUATION_QUERIES_DIR
 
@@ -193,7 +193,13 @@ def run_evaluation(
 
 def main():
     parser = argparse.ArgumentParser(description="Run snippet retrieval evaluation")
-    parser.add_argument("--durations", type=float, nargs="+", default=[5.0, 10.0], help="Snippet durations")
+    parser.add_argument(
+        "--durations",
+        type=float,
+        nargs="+",
+        default=[10.0, 15.0],
+        help="Snippet durations (10s/15s default: more context for slow classical piano)",
+    )
     parser.add_argument("--baselines", type=str, nargs="+", default=["cqt", "mert"], choices=["cqt", "mert", "mert_finetuned"])
     parser.add_argument("--output-dir", type=Path, default=None, help="Where to save query snippets")
     parser.add_argument("--gpu", type=int, default=None, help="GPU ID for MERT")

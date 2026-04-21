@@ -1,4 +1,8 @@
-"""Query generation for evaluation: same-recording snippet extraction with augmentations."""
+"""Query generation for evaluation: same-recording snippet extraction with augmentations.
+
+Snippet *durations* are chosen by the caller (e.g. run_eval defaults to 10s and 15s
+for enough melodic/harmonic context in slow classical piano).
+"""
 
 import random
 import tempfile

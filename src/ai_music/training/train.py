@@ -62,7 +62,7 @@ def run_training(
     batch_size: int = 8,
     lr: float = 1e-3,
     margin: float = 0.3,
-    snippet_duration: float = 10.0,
+    snippet_duration: float = 15.0,
     output_dim: int = 256,
     save_dir: Path | None = None,
     seed: int = 42,
@@ -155,7 +155,12 @@ def main():
     parser.add_argument("--batch-size", type=int, default=8)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--margin", type=float, default=0.3)
-    parser.add_argument("--snippet-duration", type=float, default=10.0)
+    parser.add_argument(
+        "--snippet-duration",
+        type=float,
+        default=15.0,
+        help="Seconds per training snippet (default 15 aligns with eval 10s/15s windows)",
+    )
     parser.add_argument("--output-dim", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--save-dir", type=Path, default=None, help="Checkpoint directory")
