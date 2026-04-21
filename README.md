@@ -150,6 +150,12 @@ CUDA_VISIBLE_DEVICES=0 python scripts/run_mert_retrieval.py --k 5
 ```bash
 python scripts/train_contrastive.py --gpu 0 --epochs 50
 ```
+Optional changing snippet duration in contrastive training:
+
+```bash
+python scripts/train_contrastive.py --snippet-duration 20 --gpu 0 --epochs 50
+```
+Default snippet length is 30 seconds.
 
 Useful flags (see `train.py` / `--help`):
 
