@@ -111,7 +111,7 @@ def run_training(
     batch_size: int = 8,
     lr: float = 1e-3,
     margin: float = 0.3,
-    snippet_duration: float = 15.0,
+    snippet_duration: float = 20.0,
     output_dim: int = 256,
     save_dir: Path | None = None,
     seed: int = 42,
@@ -203,6 +203,7 @@ def run_training(
         )
 
     print(f"Training for {epochs} epochs (starting at {start_epoch}), batch_size={batch_size}")
+    print(f"Snippet duration: {snippet_duration:.1f}s (recommended vanilla runs: 20s and 30s)")
     print(f"Augmentation pipeline: {train_dataset.augment}")
 
     for epoch in range(start_epoch, epochs + 1):
@@ -258,8 +259,8 @@ def main():
     parser.add_argument(
         "--snippet-duration",
         type=float,
-        default=15.0,
-        help="Seconds per training snippet (default 15 aligns with eval 10s/15s windows)",
+        default=20.0,
+        help="Seconds per training snippet (default 20; recommended vanilla sweeps: 20s and 30s)",
     )
     parser.add_argument("--output-dim", type=int, default=256)
     parser.add_argument("--seed", type=int, default=42)
