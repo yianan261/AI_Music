@@ -8,9 +8,9 @@ src/ai_music.egg-info/SOURCES.txt
 src/ai_music.egg-info/dependency_links.txt
 src/ai_music.egg-info/requires.txt
 src/ai_music.egg-info/top_level.txt
-src/ai_music/data/__init__.py
-src/ai_music/data/prepare_maestro.py
-src/ai_music/data/preprocess.py
+src/ai_music/src_data/__init__.py
+src/ai_music/src_data/prepare_maestro.py
+src/ai_music/src_data/preprocess.py
 src/ai_music/evaluation/__init__.py
 src/ai_music/evaluation/metrics.py
 src/ai_music/evaluation/query_generation.py

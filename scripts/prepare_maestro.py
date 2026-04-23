@@ -5,7 +5,7 @@ Run after extracting the MAESTRO dataset.
 """
 import argparse
 
-from ai_music.data.prepare_maestro import prepare_maestro
+from ai_music.src_data.prepare_maestro import prepare_maestro
 
 
 def main():

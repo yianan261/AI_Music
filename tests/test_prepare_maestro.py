@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import soundfile as sf
 
-from ai_music.data.prepare_maestro import prepare_maestro
+from ai_music.src_data.prepare_maestro import prepare_maestro
 
 
 def test_prepare_maestro_count_and_mapping():

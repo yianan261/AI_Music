@@ -238,7 +238,7 @@ AI_Music/
 │
 ├── src/ai_music/               # Importable package
 │   ├── config.py               # Paths, MODEL_ID (MERT), constants
-│   ├── data/
+│   ├── src_data/
 │   │   ├── dataset.py          # Triplet dataset for training
 │   │   ├── prepare_maestro.py
 │   │   └── preprocess.py
@@ -277,7 +277,7 @@ AI_Music/
 ### Using the package in Python
 
 ```python
-from ai_music.data import prepare_maestro, preprocess
+from ai_music.src_data import prepare_maestro, preprocess
 from ai_music.retrieval import load_mert, extract_mert_embedding, build_faiss_index
 from ai_music.config import PROCESSED_16K_DIR, PROCESSED_24K_DIR, RAW_AUDIO_DIR, MODEL_ID
 ```

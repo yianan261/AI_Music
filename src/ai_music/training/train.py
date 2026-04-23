@@ -13,7 +13,7 @@ from pathlib import Path
 import torch
 from torch.utils.data import DataLoader
 from ai_music import config
-from ai_music.data.dataset import MusicTripletDataset
+from ai_music.src_data.dataset import MusicTripletDataset
 from ai_music.training.losses import TripletLoss
 from ai_music.training.model import MERTEmbedder, ProjectionHead
 

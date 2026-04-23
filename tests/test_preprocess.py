@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import soundfile as sf
 
-from ai_music.data.preprocess import preprocess
+from ai_music.src_data.preprocess import preprocess
 
 
 def test_preprocess_output_sample_rates():

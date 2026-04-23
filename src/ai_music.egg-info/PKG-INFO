@@ -149,7 +149,7 @@ On unmanaged shared servers (e.g. academic GPU nodes):
 AI_Music/
   src/ai_music/       # Reusable package
     config.py         # Paths, constants
-    data/             # prepare_maestro, preprocess
+    src_data/         # prepare_maestro, preprocess
     retrieval/        # mert, cqt_baseline, faiss_index
     evaluation/      # metrics, query_generation, run_eval
     utils/            # audio, paths
@@ -177,7 +177,7 @@ AI_Music/
 ### Using the package
 
 ```python
-from ai_music.data import prepare_maestro, preprocess
+from ai_music.src_data import prepare_maestro, preprocess
 from ai_music.retrieval import load_mert, extract_mert_embedding, build_faiss_index
 from ai_music.config import PROCESSED_DIR, RAW_AUDIO_DIR
 ```
